@@ -12,7 +12,7 @@ function browserSync(done) {
     server: {
       baseDir: "./"
     },
-    port: 3000
+    port: 8000
   });
   done();
 }
@@ -39,11 +39,15 @@ function modules() {
       '!./node_modules/jquery/dist/core.js'
     ])
     .pipe(gulp.dest('./vendor/jquery'));
-  return merge(bootstrap, jquery);
+  // scripts
+  var scripts = gulp.src('./js/*')
+    .pipe(gulp.dest('./js'));
+  return merge(bootstrap, jquery, scripts);
 }
 
 // Watch files
 function watchFiles() {
+  gulp.watch("./**/*.js", browserSyncReload);
   gulp.watch("./**/*.css", browserSyncReload);
   gulp.watch("./**/*.html", browserSyncReload);
 }
