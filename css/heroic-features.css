@@ -15,3 +15,17 @@ body {
   width: 50px;
   height: 50px;
 }
+
+.btn-primary {
+  background-color: #007049;
+  border-color: #007049;
+}
+
+.btn-primary:hover {
+  background-color: #1D9B42;
+  border-color: #007049;
+}
+.btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle, .btn-primary:active {
+  background-color: #006039;
+  border-color: #007049;
+}

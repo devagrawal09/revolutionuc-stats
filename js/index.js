@@ -1,5 +1,5 @@
 const API_URL = `http://localhost:3000/api`
-const API_KEY = `testapikey`
+let API_KEY = ``
 const COLORS = {
   primary: `#007049`,
   orange: `#FFC04B`,
@@ -10,22 +10,41 @@ const COLORS = {
 
 const main = async () => {
 	try {
-		const registrants = await $.ajax({
-			url: `${API_URL}/admin/registrants`,
-			method: `GET`,
-			headers: {
-				'x-api-key': API_KEY
-			}
-    })
-    const attendees = registrants.filter(({ checkedIn }) => checkedIn)
-
-    document.getElementById(`checkedInNum`).innerText = attendees.length
-    renderLevelChart(attendees)
-    renderMajorChart(attendees)
-    renderStatusChart(registrants)
+    if( API_KEY ) init(API_KEY)
+    else {
+      API_KEY = localStorage.getItem(`API_KEY`)
+      if( API_KEY ) init(API_KEY)
+      else {
+        renderLogin()
+      }
+    }
 	} catch(err) {
 		console.error(err)
 	}
+}
+
+const init = async apiKey => {
+  document.getElementById(`public`).style.display = `none`
+  document.getElementById(`private`).style.display = `block`
+  document.getElementById(`logoutButton`).style.display = `block`
+
+  const registrants = await fetchRegistrants(apiKey)
+  const attendees = registrants.filter(({ checkedIn }) => checkedIn)
+
+  document.getElementById(`checkedInNum`).innerText = attendees.length
+  renderLevelChart(attendees)
+  renderMajorChart(attendees)
+  renderStatusChart(registrants)
+}
+
+const fetchRegistrants = apiKey => {
+  return $.ajax({
+    url: `${API_URL}/admin/registrants`,
+    method: `GET`,
+    headers: {
+      'x-api-key': apiKey
+    }
+  })
 }
 
 const renderLevelChart = attendees => {
@@ -58,8 +77,8 @@ const renderMajorChart = attendees => {
     return stats
   }, {})
   const majors = Object.entries(stats).sort((a, b) => b[1] - a[1]).splice(0, 5)
-  const labels = majors.map(([ major, count ]) => major);
-  const data = majors.map(([ major, count ]) => count);
+  const labels = majors.map(([ major, count ]) => major)
+  const data = majors.map(([ major, count ]) => count)
   const el = document.getElementById(`majorChart`).getContext(`2d`)
   new Chart(el, {
     type: `pie`,
@@ -103,6 +122,24 @@ const renderStatusChart = registrants => {
       }
     }
   })
+}
+
+const renderLogin = () => {
+  document.getElementById(`private`).style.display = `none`
+  document.getElementById(`logoutButton`).style.display = `none`
+  document.getElementById(`public`).style.display = `block`
+  document.getElementById(`loginForm`).onsubmit = e => {
+    e.preventDefault()
+    const apiKey = e.target[`API_KEY`].value
+    if( !apiKey ) return alert(`Please enter an api key`)
+    localStorage.setItem(`API_KEY`, apiKey)
+    init(apiKey)
+  }
+}
+
+const logout = () => {
+  localStorage.removeItem(`API_KEY`)
+  renderLogin()
 }
 
 (function($) {
